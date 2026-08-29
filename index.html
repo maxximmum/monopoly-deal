@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Monopoly Deal — Online</title>
+<style>
+*{box-sizing:border-box}
+:root{
+ --bg1:#061b63;--bg2:#0b65e7;--bg3:#0878ff;--panel:#082b82cc;--line:#ffffff20;
+ --white:#fff;--muted:#dbe7ff;--gold:#f5df4b;--orange:#f47c18;--red:#ed2445;
+ --brown:#b67b4b;--ltblue:#63b8e4;--pink:#e05a9b;--orangeprop:#f19a3b;
+ --redprop:#e9454f;--yellow:#f1c62f;--green:#56b86a;--blue:#4d72ce;
+}
+html,body{margin:0;min-height:100%;font-family:Arial,Helvetica,sans-serif;background:#06164f;color:#fff}
+body{background:
+ radial-gradient(circle at 50% 70%,#0a83ff 0,#075fdb 28%,transparent 57%),
+ linear-gradient(150deg,var(--bg1),#082a83 55%,#0750bf);
+ overflow-x:hidden}
+button,input{font:inherit}button{cursor:pointer}
+.hidden{display:none!important}
+.app{width:min(100%,620px);min-height:100vh;margin:auto;padding:10px 8px 20px;position:relative}
+.top-icons{height:46px;display:flex;justify-content:flex-end;gap:10px;align-items:center}
+.icon-btn{width:38px;height:38px;border-radius:50%;border:0;background:#08296fc9;color:#fff;font-size:20px;box-shadow:inset 0 1px #ffffff22}
+.back{position:absolute;left:9px;top:10px;border-radius:10px;background:#ed6d16;width:38px;height:38px;border:2px solid #ffb26c;color:#fff;font-size:25px}
+.players{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;border-bottom:1px solid #ffffff24}
+.player{min-width:0;height:92px;background:linear-gradient(#092b82,#052465);border-left:1px solid #ffffff12;position:relative}
+.player.me{box-shadow:inset 0 -4px #ffdf00}
+.player-head{height:39px;display:flex;align-items:center;gap:5px;padding:3px 4px;font-size:10px;font-weight:900}
+.player:nth-child(1) .player-head{background:#07965b}.player:nth-child(2) .player-head{background:#1265d8}.player:nth-child(3) .player-head{background:#cb2437}.player:nth-child(4) .player-head{background:#7a4dcc}.player:nth-child(5) .player-head{background:#d26c1c}
+.avatar{width:29px;height:29px;border-radius:50%;border:2px solid #fff;flex:0 0 auto;overflow:hidden;background:#ddd}.avatar svg{width:100%;height:100%}
+.pname{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.money{display:inline-flex;align-items:center;gap:3px;color:#111;background:#f7df38;border-radius:8px;padding:2px 6px;font-size:9px;margin-left:auto}
+.pbody{padding:4px 7px;color:#fff;font-size:9px}.pbody .cards{font-size:13px}.mini-props{display:flex;gap:3px;margin-top:4px}.mini-set{height:24px;min-width:24px;border-radius:3px;border:1px solid #fff;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:900;color:#fff;text-shadow:0 1px #000}
+.table{position:relative;height:430px}
+.deck{position:absolute;left:18px;top:45px;width:64px;height:88px;border-radius:6px;background:linear-gradient(135deg,#ff9c44,#ee382e);border:2px solid #fff;box-shadow:0 3px 10px #0005;display:flex;align-items:center;justify-content:center;transform:rotate(-1deg)}
+.deck:after{content:"DEAL";font-family:Georgia,serif;font-weight:900;color:#fff;font-size:14px;transform:rotate(-1deg)}
+.played{position:absolute;left:22px;top:145px;width:74px;display:flex;flex-direction:column;gap:5px;align-items:center}
+.played .tiny{width:58px;height:78px}
+.played-title{font-size:8px;text-transform:uppercase;color:#d9e7ff;font-weight:900}
+.center-note{position:absolute;left:50%;top:60px;transform:translateX(-50%);font-size:12px;font-weight:900;color:#d9e8ff;white-space:nowrap}
+.pass{position:absolute;right:15px;bottom:50px;width:64px;height:64px;border-radius:50%;background:#f27a19;border:3px solid #ffd4a4;color:#fff;font-size:28px;box-shadow:0 3px 10px #0005}
+.pass-label{position:absolute;right:7px;bottom:39px;font-size:12px;font-weight:900}
+.dots{position:absolute;right:20px;bottom:19px;display:flex;gap:5px}.dot{width:10px;height:10px;border-radius:50%;background:#001b59}.dot.on{background:#ffdf3e}
+.mybar{height:39px;display:flex;align-items:center;gap:7px;padding:0 8px}
+.myavatar{width:47px;height:47px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 14px #ffe74a;overflow:hidden;background:#ddd;flex:0 0 auto}.myavatar svg{width:100%;height:100%}
+.myname{font-size:12px;font-weight:900}.stats{display:flex;gap:8px;font-size:10px;margin-top:2px}.stat{background:#062563;border-radius:10px;padding:3px 7px}
+.property-area{margin:0 5px;height:70px;background:#001e63aa;border-radius:4px;display:flex;align-items:center;justify-content:center;gap:3px;overflow:hidden}
+.prop-card{width:70px;height:58px;border-radius:3px;background:#fff;color:#111;position:relative;border:1px solid #d8d8d8;box-shadow:0 1px 4px #0004;padding:4px;font-size:7px;flex:0 0 auto}
+.prop-card .strip{height:12px;margin:-4px -4px 3px;border-bottom:1px solid #777}.prop-card .v{position:absolute;left:3px;top:2px;background:#fff;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:8px}.prop-card .pn{font-weight:900;text-align:center;font-size:7px}.prop-card .rent{font-size:7px;text-align:center;margin-top:5px}.prop-card .rline{display:flex;justify-content:space-between;border-top:1px dotted #777;margin-top:2px}
+.hand-zone{margin-top:4px;background:#002367b5;border-radius:5px;padding:7px 7px 3px;min-height:155px}.hand{display:flex;justify-content:center;align-items:flex-end;gap:4px;overflow-x:auto;min-height:150px;padding:5px 3px}.card{width:66px;height:106px;flex:0 0 66px;background:#f8f6ec;color:#111;border-radius:5px;border:1px solid #ddd;box-shadow:0 4px 9px #0005;position:relative;padding:4px;transition:.12s;user-select:none}.card.selected{transform:translateY(-13px);box-shadow:0 0 0 3px #ffe63d,0 10px 15px #0007}.card .v{position:absolute;left:4px;top:3px;border:1px solid #999;border-radius:50%;width:18px;height:18px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;z-index:2}.card .top{height:20px;margin:-4px -4px 3px;border-bottom:1px solid #999}.card .title{font-weight:900;font-size:7px;text-align:center;line-height:1.05;margin-top:4px}.card .kind{font-size:6px;text-align:center;color:#555;text-transform:uppercase}.card .renttbl{font-size:6px;margin-top:5px}.card .renttbl div{display:flex;justify-content:space-between;border-top:1px dotted #999;padding-top:2px}.card.action{background:#d8b59a}.card.action .top{background:#d8b59a}.card.money{background:#eef1c8}.card.rent{background:#e9eef4}.card.wild{background:#fff}.card .action-circle{width:39px;height:39px;border:2px solid #111;border-radius:50%;margin:11px auto 3px;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:900;font-size:7px}.card .wildbars{position:absolute;left:0;right:0;bottom:7px;height:14px;background:linear-gradient(90deg,#63b8e4 0 12.5%,#e05a9b 12.5% 25%,#f19a3b 25% 37.5%,#e9454f 37.5% 50%,#f1c62f 50% 62.5%,#56b86a 62.5% 75%,#4d72ce 75% 87.5%,#9d734f 87.5%)}.card.money .action-circle{background:#fff}.controls{display:flex;justify-content:center;gap:7px;margin-top:5px}.ctrl{border:0;border-radius:8px;background:#ec7a21;color:#fff;font-weight:900;padding:8px 13px;font-size:10px;box-shadow:inset 0 1px #ffffff55}.ctrl.secondary{background:#164caa}.ctrl:disabled{opacity:.45}
+.modal{position:fixed;inset:0;background:#14165dcc;z-index:100;display:flex;align-items:center;justify-content:center;padding:14px}.modalbox{width:min(500px,100%);background:#3830b8;border-radius:8px;box-shadow:0 20px 70px #0008;overflow:hidden}.modalhead{padding:10px 12px;text-align:center;background:#3c36bd;font-size:17px;font-weight:900}.modalbody{padding:13px}.modalcard{display:flex;justify-content:center;gap:5px;min-height:110px}.modal-actions{display:flex;gap:8px;justify-content:center;margin-top:12px}.choice{border:0;border-radius:9px;background:#f0a15c;color:#fff;padding:10px 18px;font-weight:900}.choice.alt{background:#744455}.choice:disabled{opacity:.45}
+.feed{position:absolute;right:15px;top:170px;width:160px;max-height:115px;overflow:hidden;font-size:8px;color:#dbe8ff;text-align:right}.feed div{margin-bottom:3px}
+.overlay{position:fixed;inset:0;background:#071b5bdc;z-index:200;display:flex;align-items:center;justify-content:center;padding:20px}.result{width:min(420px,100%);background:#382fb7;border-radius:16px;padding:25px;text-align:center;box-shadow:0 30px 80px #0008}.result h2{margin:0 0 5px;font-family:Georgia,serif;font-size:30px}.result .winner{font-size:22px;font-weight:900;color:#ffe53c}.result button{margin-top:16px}
+.landing{min-height:100vh;display:flex;align-items:center;justify-content:center}.joinbox{width:min(430px,100%);background:#06265fdd;border:1px solid #ffffff22;border-radius:18px;padding:25px;text-align:center}.joinbox h1{font-family:Georgia,serif;letter-spacing:.04em;margin:0 0 6px}.joinbox p{color:#dbe7ff;font-size:12px}.joinbox input{width:100%;padding:13px;border-radius:10px;border:0;margin:6px 0;background:#f8fbff}.avatars{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin:13px 0}.avaPick{width:48px;height:48px;border-radius:50%;border:2px solid transparent;background:#fff;overflow:hidden}.avaPick.selected{border-color:#ffe638;box-shadow:0 0 0 3px #ffe63844}.joinrow{display:flex;gap:7px}.joinrow button{flex:1;padding:12px;border:0;border-radius:10px;background:#f57c18;color:#fff;font-weight:900}.joinrow button.alt{background:#1256c8}.hint{font-size:10px;color:#bcd0f3;min-height:16px;margin-top:7px}
+@media(max-width:430px){.app{padding-left:3px;padding-right:3px}.players{grid-template-columns:repeat(3,1fr);overflow:hidden}.player:nth-child(n+4){display:none}.table{height:395px}.hand-zone{min-height:145px}.card{width:59px;height:96px;flex-basis:59px}.feed{display:none}}
+</style>
+</head>
+<body>
+<div id="app" class="app">
+  <section id="landing" class="landing">
+    <div class="joinbox">
+      <h1>MONOPOLY DEAL</h1><p>Fast-dealing property card game · online</p>
+      <input id="name" maxlength="18" placeholder="Your name">
+      <div class="avatars" id="avatarChoices"></div>
+      <div class="joinrow"><button id="create">CREATE GAME</button><button id="joinBtn" class="alt">JOIN GAME</button></div>
+      <input id="roomCode" maxlength="6" placeholder="Room code (for Join)" style="text-transform:uppercase">
+      <div id="landingMsg" class="hint"></div>
+    </div>
+  </section>
+
+  <section id="gameShell" class="hidden">
+    <button class="back" id="leave">‹</button>
+    <div class="top-icons"><button class="icon-btn" id="sound">🔊</button><button class="icon-btn">♪</button><button class="icon-btn" id="rules">▥</button></div>
+    <div class="players" id="players"></div>
+    <div class="table">
+      <div class="center-note" id="turnText">Waiting…</div>
+      <div class="deck" id="deck"></div>
+      <div class="played" id="played"></div>
+      <div class="feed" id="feed"></div>
+      <button class="pass" id="pass">↥</button><span class="pass-label">Pass</span>
+      <div class="dots" id="dots"></div>
+    </div>
+    <div class="mybar"><div class="myavatar" id="myAvatar"></div><div><div class="myname" id="myName"></div><div class="stats"><span class="stat" id="myMoney">Ⓜ 0M</span><span class="stat" id="myCount">▱ x0</span><span class="stat" id="timer">15:00</span></div></div></div>
+    <div class="property-area" id="myProps"></div>
+    <div class="hand-zone"><div class="hand" id="hand"></div></div>
+    <div class="controls"><button class="ctrl" id="play">PLAY</button><button class="ctrl secondary" id="bank">BANK</button><button class="ctrl secondary" id="end">END TURN</button></div>
+  </section>
+</div>
+
+<div id="modal" class="modal hidden"><div class="modalbox"><div class="modalhead" id="modalTitle"></div><div class="modalbody" id="modalBody"></div><div class="modal-actions" id="modalActions"></div></div></div>
+<div id="result" class="overlay hidden"><div class="result"><h2 id="resultTitle">Game Over</h2><div class="winner" id="winnerName"></div><div id="resultReason" style="margin-top:7px;color:#dce8ff;font-size:12px"></div><button class="ctrl" id="rematch">REMATCH</button></div></div>
+
+<script>
+const SUPABASE_URL="https://kzfkzkxyxwtvoweiioiq.supabase.co";
+const SUPABASE_KEY="sb_publishable_C19jG2MKT5NJFl5suzIB6w_beZBBFvh";
+const TABLE="games", GAME_MS=15*60*1000, MAX_PLAYS=3;
+const $=id=>document.getElementById(id);
+let me={id:crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2),name:"",avatar:0};
+let room="",state=null,selected=null,pollTimer=null,timerTimer=null,pending=null;
+
+const animals=[
+ ["🐱","#f1c8aa"],["🐶","#b8d1e8"],["🐰","#dfcaea"],["🦊","#f0b26d"],["🐻","#d4b18b"],["🐼","#d9dde2"],
+ ["🐸","#a9d4ad"],["🐯","#e7b66d"],["🐨","#bdc5c6"],["🐧","#b6cfe3"],["🦌","#dcc6a2"],["🐭","#ddbccc"]
+];
+function avatarSVG(i){const [e,bg]=animals[i%animals.length];return `<svg viewBox="0 0 100 100"><rect width="100" height="100" rx="50" fill="${bg}"/><text x="50" y="65" text-anchor="middle" font-size="58">${e}</text></svg>`}
+animals.forEach((_,i)=>{const b=document.createElement("button");b.className="avaPick";b.innerHTML=avatarSVG(i);b.type="button";b.onclick=()=>{document.querySelectorAll(".avaPick").forEach(x=>x.classList.remove("selected"));b.classList.add("selected");me.avatar=i};$("avatarChoices").appendChild(b)});$("avatarChoices").firstElementChild.classList.add("selected");
+
+const COLORS=[
+ {id:"brown",name:"Brown",hex:"#9d734f",need:2,rents:[1,2,4]},
+ {id:"lightblue",name:"Light Blue",hex:"#63b8e4",need:3,rents:[1,2,3]},
+ {id:"pink",name:"Pink",hex:"#e05a9b",need:3,rents:[1,2,4]},
+ {id:"orange",name:"Orange",hex:"#f19a3b",need:3,rents:[1,3,5]},
+ {id:"red",name:"Red",hex:"#e9454f",need:3,rents:[2,3,6]},
+ {id:"yellow",name:"Yellow",hex:"#f1c62f",need:3,rents:[2,4,6]},
+ {id:"green",name:"Green",hex:"#56b86a",need:3,rents:[2,4,7]},
+ {id:"blue",name:"Dark Blue",hex:"#4d72ce",need:2,rents:[3,8,10]}
+];
+const ACTIONS=[
+ ["Pass Go",1,8],["Sly Deal",3,3],["Forced Deal",3,3],["Deal Breaker",5,2],["Debt Collector",3,3],
+ ["It's My Birthday",2,3],["Double the Rent",1,2],["Just Say No",4,3],["House",3,3],["Hotel",4,2]
+];
+function makeDeck(){
+ let d=[],id=1,add=(type,name,value,extra={})=>d.push({id:id++,type,name,value,...extra});
+ // 10 cards of each requested property colour. Set sizes remain 2–3 (8 colours).
+ COLORS.forEach(c=>{for(let i=0;i<10;i++)add("property",c.name,c.rents[Math.min(2,i%3)],{color:c.id,need:c.need})});
+ // Generous wild supply so completing sets is possible in normal-length games.
+ const wildPairs=[["brown","lightblue"],["lightblue","pink"],["pink","orange"],["orange","red"],["red","yellow"],["yellow","green"],["green","blue"],["blue","brown"],["any","any"]];
+ for(let i=0;i<18;i++){const pair=wildPairs[i%wildPairs.length];add("wild",pair[0]==="any"?"Property Wild":`${cap(pair[0])} / ${cap(pair[1])}`,3,{colors:pair})}
+ // Rent cards are intentionally frequent.
+ for(let i=0;i<24;i++){const c=COLORS[i%8];add("rent",`Rent — ${c.name}`,c.rents[2],{color:c.id,colors:[c.id]})}
+ for(let i=0;i<4;i++)add("rent","Any Rent",3,{color:"any",colors:["any"]});
+ ACTIONS.forEach(([n,v,count])=>{for(let i=0;i<count;i++)add("action",n,v)});
+ [1,1,1,1,1,1,2,2,2,2,2,3,3,3,4,4,4,5,5,5,10,10].forEach(v=>add("money","Money",v));
+ return d.sort(()=>Math.random()-.5);
+}
+function cap(s){return s[0].toUpperCase()+s.slice(1)}
+function moneyTotal(p){return (p.bank||[]).reduce((a,c)=>a+(c.value||0),0)}
+function completeSets(p){const result=[];COLORS.forEach(c=>{const cards=(p.properties||[]).filter(x=>x.color===c.id);const wild=(p.properties||[]).filter(x=>x.type==="wild"&&x.colors.some(y=>y===c.id||y==="any"));let used=cards.length;if(used<c.need)used=Math.min(c.need,used+wild.length);if(used>=c.need)result.push(c.id)});return result}
+function propertyValue(p){return (p.properties||[]).reduce((a,c)=>a+(c.value||0),0)}
+function shuffle(a){return a.sort(()=>Math.random()-.5)}
+function draw(st,p,n){for(let i=0;i<n;i++){if(!st.deck.length){st.deck=shuffle(st.discard.splice(0));if(!st.deck.length)break}p.hand.push(st.deck.pop())}}
+function initState(players){
+ const deck=makeDeck(), ps=players.map(p=>({id:p.id,name:p.name,avatar:p.avatar,hand:[],bank:[],properties:[]}));
+ const st={deck,discard:[],players:ps,turn:0,plays:0,startedAt:Date.now(),endsAt:Date.now()+GAME_MS,status:"playing",winner:null,history:[],pending:null};
+ ps.forEach(p=>draw(st,p,5));
+ return st;
+}
+async function api(path,opts={}){
+ const r=await fetch(`${SUPABASE_URL}/rest/v1/${path}`,{...opts,headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`,"Content-Type":"application/json","Prefer":"return=representation",...(opts.headers||{})}});
+ if(!r.ok)throw new Error(await r.text());return r.status===204?null:r.json();
+}
+function setMsg(s){$("landingMsg").textContent=s}
+async function createRoom(){
+ const name=$("name").value.trim();if(!name)return setMsg("Enter your name.");
+ me.name=name;room=Math.random().toString(36).slice(2,8).toUpperCase();
+ const players=[{id:me.id,name:me.name,avatar:me.avatar}];
+ try{await api(TABLE,{method:"POST",body:JSON.stringify({id:room,host_id:me.id,players,status:"lobby",game_state:{}})});history.pushState({},'',`?room=${room}`);await watch();}catch(e){console.error(e);setMsg("Couldn't create the room.");}
+}
+async function joinRoom(){
+ const name=$("name").value.trim(),code=$("roomCode").value.trim().toUpperCase();if(!name)return setMsg("Enter your name.");if(code.length!==6)return setMsg("Enter a 6-character room code.");
+ try{const rows=await api(`${TABLE}?id=eq.${code}&select=*`);if(!rows.length)return setMsg("Room not found.");const g=rows[0];if(g.status!=="lobby")return setMsg("Game already started.");if(g.players.length>=5)return setMsg("Room is full.");
+ me.name=name;room=code;const players=[...g.players,{id:me.id,name:me.name,avatar:me.avatar}];await api(`${TABLE}?id=eq.${room}`,{method:"PATCH",body:JSON.stringify({players})});await watch();}catch(e){console.error(e);setMsg("Couldn't join the room.");}
+}
+async function watch(){
+ if(pollTimer)clearInterval(pollTimer);
+ pollTimer=setInterval(loadRoom,900);await loadRoom();
+}
+async function loadRoom(){
+ if(!room)return;
+ try{
+  const rows=await api(`${TABLE}?id=eq.${room}&select=*`);if(!rows.length)return;
+  const g=rows[0];
+  if(g.status==="lobby"){showGame(false);renderLobby(g)}
+  else if(g.game_state){state=g.game_state;showGame(true);renderGame();if(state.status==="finished")showResult()}
+ }catch(e){console.error(e)}
+}
+function showGame(on){
+  $("landing").classList.add("hidden");
+  $("gameShell").classList.remove("hidden");
+}
+function renderLobby(g){
+ $("turnText").textContent=`ROOM ${room} · ${g.players.length}/5 PLAYERS`;
+ $("players").innerHTML=g.players.map(p=>playerHTML(p,[],p.id===me.id,0)).join("");
+ $("hand").innerHTML=`<div style="color:#cfe0ff;font-size:11px;text-align:center;width:100%;padding:35px">Waiting in lobby…<br><br>${g.host_id===me.id&&g.players.length>=2?'<button class="ctrl" id="startLobby">START GAME</button>':'Waiting for host to start'}</div>`;
+ $("myName").textContent=me.name;$("myAvatar").innerHTML=avatarSVG(me.avatar);
+ const b=document.getElementById("startLobby");if(b)b.onclick=startGame;
+}
+function playerHTML(p,sets,isMe,turn){
+ const bankCards=(p.bank||[]).slice(-6).map(c=>`<span style="display:inline-flex;align-items:center;justify-content:center;background:#eef1c8;color:#111;border:1px solid #fff;border-radius:3px;width:16px;height:18px;font-size:7px;font-weight:900">M${c.value}</span>`).join("");
+ return `<div class="player ${isMe?"me":""}"><div class="player-head">${avatarSVG(p.avatar)}<span class="pname">${esc(p.name)}</span><span class="money">Ⓜ ${(moneyTotal(p))}M</span></div><div class="pbody"><span class="cards">▱ x${(p.hand||[]).length} · BANK Ⓜ${moneyTotal(p)}</span><div class="mini-props">${sets.map(c=>`<span class="mini-set" style="background:${c.hex}">${c.need}</span>`).join("")}</div><div style="display:flex;gap:2px;margin-top:3px;min-height:18px">${bankCards}</div></div></div>`;
+}
+async function startGame(){
+ try{
+  const rows=await api(`${TABLE}?id=eq.${room}&select=*`);if(!rows.length)return;const g=rows[0];if(g.host_id!==me.id)return;
+  if(g.players.length<2)return setMsg("Need at least 2 players.");
+  const st=initState(g.players);
+  await api(`${TABLE}?id=eq.${room}`,{method:"PATCH",body:JSON.stringify({status:"playing",game_state:st})});
+  state=st;renderGame();
+ }catch(e){console.error(e);alert("Couldn't start: "+e.message)}
+}
+function renderGame(){
+ if(!state||!state.players)return;
+ const mep=state.players.find(p=>p.id===me.id);if(!mep)return;
+ const turnP=state.players[state.turn];$("turnText").textContent=turnP?.id===me.id?"YOUR TURN":`${turnP?.name||""}'S TURN`;
+ $("players").innerHTML=state.players.map(p=>playerHTML(p,completeSetObjects(p),p.id===me.id,p.id===turnP?.id)).join("");
+ $("myName").textContent=me.name;$("myAvatar").innerHTML=avatarSVG(me.avatar);
+ $("myMoney").textContent=`Ⓜ ${moneyTotal(mep)}M`;$("myCount").textContent=`▱ x${mep.hand.length}`;
+ $("timer").textContent=formatTime(Math.max(0,Math.floor((state.endsAt-Date.now())/1000)));
+ $("deck").title=`${state.deck.length} cards left`;
+ renderPlayed();renderProps(mep);renderHand(mep);renderDots();
+ $("play").disabled=turnP.id!==me.id||state.plays>=3||selected==null;
+ $("bank").disabled=turnP.id!==me.id||state.plays>=3||selected==null;
+}
+function completeSetObjects(p){return completeSets(p).map(id=>COLORS.find(c=>c.id===id)).filter(Boolean)}
+function renderProps(p){
+ const cards=[...(p.properties||[])];$("myProps").innerHTML=cards.length?cards.map(c=>propertyHTML(c)).join(""):`<span style="font-size:9px;color:#b9d1fa">YOUR PROPERTY SETS</span>`;
+}
+function propertyHTML(c){
+ const col=c.type==="wild"?"#eee":COLORS.find(x=>x.id===c.color)?.hex||"#ddd";
+ return `<div class="prop-card"><div class="strip" style="background:${col}"></div><div class="v">${c.value||3}M</div><div class="pn">${esc(c.name)}</div><div class="rent">RENT</div><div class="rline"><span>1</span><b>M1</b></div><div class="rline"><span>2</span><b>M2</b></div><div class="rline"><span>FULL SET</span><b>M${c.value||4}</b></div></div>`;
+}
+function cardHTML(c,sel){
+ let col=c.type==="property"?COLORS.find(x=>x.id===c.color)?.hex:"#ddd";
+ if(c.type==="wild")col="#f1c62f";
+ if(c.type==="rent")col=c.color==="any"?"#f0f0f0":COLORS.find(x=>x.id===c.color)?.hex||"#ddd";
+ if(c.type==="action")col="#d8b59a";
+ if(c.type==="money")col="#dbe4aa";
+ const extra=c.type==="action"?`<div class="action-circle">${esc(c.name)}</div>`:c.type==="wild"?`<div class="action-circle">PROPERTY<br>WILD</div><div class="wildbars"></div>`:c.type==="rent"?`<div class="action-circle">RENT</div>`:c.type==="money"?`<div class="action-circle">Ⓜ</div>`:`<div class="renttbl"><div><span>1</span><b>M${c.value}</b></div><div><span>2</span><b>M${c.value*2}</b></div><div><span>FULL SET</span><b>M${c.value*2+2}</b></div></div>`;
+ return `<div class="card ${c.type}${sel?" selected":""}" data-id="${c.id}"><div class="top" style="background:${col}"></div><div class="v">${c.value}M</div>${c.type==="property"?`<div class="title">${esc(c.name)}</div>`:""}${extra}</div>`;
+}
+function renderHand(p){
+ const h=$("hand");h.innerHTML="";p.hand.forEach((c,i)=>{const wrap=document.createElement("div");wrap.innerHTML=cardHTML(c,i===selected);const el=wrap.firstElementChild;el.onclick=()=>{selected=i;renderGame()};h.appendChild(el)});
+}
+function renderDots(){const n=state?.players?.[state.turn]?.id===me.id?state.plays:0;$("dots").innerHTML=[0,1,2].map(i=>`<span class="dot ${i<n?"on":""}"></span>`).join("")}
+function renderPlayed(){
+ const box=$("played");box.innerHTML=`<div class="played-title">PLAYED</div>`;
+ const recent=(state.history||[]).slice(-3).reverse();recent.forEach(x=>{const c=x.card;if(c)box.innerHTML+=`<div class="tiny card ${c.type}" style="transform:none">${cardHTML(c,false)}</div>`});
+ $("feed").innerHTML=(state.history||[]).slice(-6).reverse().map(x=>`<div>${esc(x.text)}</div>`).join("");
+}
+function addHistory(text,card){state.history=(state.history||[]).slice(-39);state.history.push({text,card});}
+function current(){return state.players[state.turn]}
+function selectedCard(){const p=state.players.find(x=>x.id===me.id);return selected==null?null:p.hand[selected]}
+async function playSelected(){
+ if(!state||current().id!==me.id)return notice("Not your turn.");
+ if(state.plays>=3)return notice("You have used all 3 plays.");
+ const c=selectedCard();if(!c)return notice("Select a card.");
+ if(c.type==="property"||c.type==="wild"){await playProperty(c);return}
+ if(c.type==="money"){return bankSelected()}
+ if(c.type==="rent"){await playRent(c);return}
+ if(c.type==="action"){await playAction(c);return}
+}
+async function playProperty(c){
+ const p=current();p.hand.splice(selected,1);selected=null;p.properties.push(c);state.plays++;
+ addHistory(`${p.name} played ${c.name}`,c);await afterPlay();renderGame()
+}
+async function bankSelected(){
+ if(current().id!==me.id)return notice("Not your turn.");if(state.plays>=3)return notice("No plays left.");
+ const c=selectedCard();if(!c)return notice("Select a card.");if(c.type==="property"||c.type==="wild")return notice("Property cards go into your property area.");
+ const p=current();p.hand.splice(selected,1);selected=null;p.bank.push(c);state.plays++;addHistory(`${p.name} banked ${c.name}`,c);await afterPlay();renderGame()
+}
+async function playRent(c){
+ const p=current();const targets=state.players.filter(x=>x.id!==p.id);
+ const t=targets.length===1?targets[0]:await choosePlayer(targets,"Who pays rent?");
+ if(!t)return;
+ const amount=rentFor(p,c.color);
+ await collectPayment(t,amount,`${p.name} is charging ${amount}M rent`);
+ removeHand(c)
+ p.bank.push({type:"money",name:"Rent card",value:c.value});state.discard.push(c);state.plays++;addHistory(`${p.name} charged ${amount}M rent`,c);await afterPlay();renderGame()
+}
+function rentFor(p,color){
+ if(color==="any"){const best=completeSets(p);if(best.length)return 8;return 3}
+ const c=COLORS.find(x=>x.id===color);if(!c)return 2;
+ const count=(p.properties||[]).filter(x=>x.color===color).length;
+ return c.rents[Math.min(c.rents.length-1,Math.max(0,count-1))];
+}
+async function playAction(c){
+ const p=current();
+ if(c.name==="Pass Go"){draw(state,p,2);removeHand(c);state.discard.push(c);state.plays++;addHistory(`${p.name} played Pass Go`,c);return afterPlay()}
+ if(c.name==="It's My Birthday"){for(const t of state.players)if(t.id!==p.id)await collectPayment(t,2,`${p.name} is asking for 2M for Birthday`);removeHand(c);state.discard.push(c);state.plays++;addHistory(`${p.name} played It's My Birthday`,c);return afterPlay()}
+ if(c.name==="Debt Collector"){const t=await choosePlayer(state.players.filter(x=>x.id!==p.id),"Who pays 5M?");if(!t)return;await collectPayment(t,5,`${p.name} is collecting 5M`);removeHand(c);state.discard.push(c);state.plays++;addHistory(`${p.name} used Debt Collector`,c);return afterPlay()}
+ if(c.name==="Sly Deal"){const t=await choosePlayer(state.players.filter(x=>x.id!==p.id&&x.properties.length),"Choose a player");if(!t)return;const prop=await chooseProperty(t.properties,"Choose a property to steal");if(!prop)return;removeFrom(t.properties,prop);p.properties.push(prop);removeHand(c);state.discard.push(c);state.plays++;addHistory(`${p.name} stole a property from ${t.name}`,c);return afterPlay()}
+ if(c.name==="Forced Deal"){const t=await choosePlayer(state.players.filter(x=>x.id!==p.id&&x.properties.length),"Choose a player");if(!t)return;if(!p.properties.length)return notice("You need a property to swap.");const mine=await chooseProperty(p.properties,"Choose your property");const theirs=await chooseProperty(t.properties,"Choose their property");if(!mine||!theirs)return;removeFrom(p.properties,mine);removeFrom(t.properties,theirs);p.properties.push(theirs);t.properties.push(mine);removeHand(c);state.discard.push(c);state.plays++;addHistory(`${p.name} swapped properties with ${t.name}`,c);return afterPlay()}
+ if(c.name==="Deal Breaker"){const t=await choosePlayer(state.players.filter(x=>x.id!==p.id&&completeSets(x).length),"Choose a player");if(!t)return;const set=await chooseSet(t);if(!set)return;const cards=takeSet(t,set);p.properties.push(...cards);removeHand(c);state.discard.push(c);state.plays++;addHistory(`${p.name} took a complete ${set.name} set`,c);return afterPlay()}
+ if(c.name==="Double the Rent"){return notice("Select a Rent card next — Double the Rent works with Rent.")}
+ if(c.name==="House"||c.name==="Hotel"){const set=await chooseSet(p);if(!set)return;set.house=(set.house||0)+(c.name==="House"?1:2);removeHand(c);state.discard.push(c);state.plays++;addHistory(`${p.name} added a ${c.name}`,c);return afterPlay()}
+ if(c.name==="Just Say No")return notice("Just Say No is played as a response to an action.");
+}
+function removeHand(c){const p=current(),i=p.hand.findIndex(x=>x.id===c.id);if(i>=0)p.hand.splice(i,1);selected=null}
+function removeFrom(a,c){const i=a.findIndex(x=>x.id===c.id);if(i>=0)a.splice(i,1)}
+function takeSet(p,set){const cards=(p.properties||[]).filter(x=>x.color===set.id);const needed=set.need;let out=cards.slice(0,needed);if(out.length<needed){for(const w of p.properties.filter(x=>x.type==="wild"&&x.colors.some(y=>y===set.id||y==="any"))){if(out.length>=needed)break;out.push(w)}}out.forEach(c=>removeFrom(p.properties,c));return out}
+function chooseSet(p){return new Promise(resolve=>{openModal("Choose a property set",p?completeSetObjects(p).map(c=>({label:`${c.name} · ${c.need} cards`,value:c.id})):[ ],v=>resolve(COLORS.find(c=>c.id===v)||null))})}
+function choosePlayer(players,title){return new Promise(resolve=>{openModal(title,players.map(p=>({label:p.name,value:p.id})),v=>resolve(players.find(p=>p.id===v)||null))})}
+function chooseProperty(props,title){return new Promise(resolve=>{openModal(title,props.map(c=>({label:c.name,value:c.id})),v=>resolve(props.find(c=>c.id===v)||null))})}
+function openModal(title,choices,cb){
+ $("modalTitle").textContent=title;$("modalBody").innerHTML="";$("modalActions").innerHTML="";
+ choices.forEach(ch=>{const b=document.createElement("button");b.className="choice";b.textContent=ch.label;b.onclick=()=>{closeModal();cb(ch.value)};$("modalActions").appendChild(b)});
+ const cancel=document.createElement("button");cancel.className="choice alt";cancel.textContent="Cancel";cancel.onclick=()=>{closeModal();cb(null)};$("modalActions").appendChild(cancel);$("modal").classList.remove("hidden")
+}
+function closeModal(){$("modal").classList.add("hidden")}
+async function collectPayment(payer,amount,reason){
+ if(moneyTotal(payer)<=0)return;
+ return new Promise(resolve=>{
+  const max=Math.min(amount,moneyTotal(payer));openPaymentModal(payer,max,reason,chosen=>{
+   chosen.forEach(c=>{removeFrom(payer.bank,c);removeFrom(payer.properties,c);current().bank.push(c)});
+   resolve()
+  })
+ })
+}
+function openPaymentModal(payer,amount,reason,cb){
+ $("modalTitle").textContent=reason;$("modalBody").innerHTML=`<div style="text-align:center;color:#fff;font-size:11px;margin-bottom:10px">Select cards worth up to ${amount}M. Payment comes from bank or properties.</div>`;
+ const all=[...(payer.bank||[]),...(payer.properties||[])];let chosen=[];
+ const box=document.createElement("div");box.className="modalcard";box.style.flexWrap="wrap";
+ all.forEach(c=>{const b=document.createElement("button");b.className="choice";b.textContent=`${c.name||"Money"} · ${c.value}M`;b.onclick=()=>{if(chosen.includes(c)){chosen=chosen.filter(x=>x!==c);b.style.opacity=1}else{const sum=chosen.reduce((a,x)=>a+x.value,0);if(sum+c.value>amount)return;b.style.opacity=.5;chosen.push(c)}};box.appendChild(b)});
+ $("modalBody").appendChild(box);const actions=$("modalActions");actions.innerHTML="";
+ const pay=document.createElement("button");pay.className="choice";pay.textContent="PAY";pay.disabled=true;pay.onclick=()=>{if(chosen.reduce((a,x)=>a+x.value,0)>=amount){closeModal();cb(chosen)}};actions.appendChild(pay);
+ box.addEventListener("click",()=>{pay.disabled=chosen.reduce((a,x)=>a+x.value,0)<amount});
+ const cancel=document.createElement("button");cancel.className="choice alt";cancel.textContent="CANCEL";cancel.onclick=()=>{closeModal();cb([])};actions.appendChild(cancel)
+}
+async function afterPlay(){
+ const p=current();const sets=completeSets(p);if(sets.length>=3)return finish(p,"completed 3 property sets");
+ if(state.plays>=3)return save();
+ return save()
+}
+async function endTurn(){
+ if(!state||current().id!==me.id)return notice("Not your turn.");
+ const p=current();
+ while(p.hand.length>7){state.discard.push(p.hand.shift())}
+ state.turn=(state.turn+1)%state.players.length;state.plays=0;selected=null;draw(state,current(),2);addHistory(`${current().name}'s turn started`);await save();renderGame()
+}
+async function save(){try{await api(`${TABLE}?id=eq.${room}`,{method:"PATCH",body:JSON.stringify({status:state.status==="finished"?"finished":"playing",game_state:state})})}catch(e){console.error(e)}}
+function finish(p,reason){state.status="finished";state.winner=p.id;state.reason=reason;save();showResult()}
+function checkTime(){if(!state||state.status!=="playing")return;const left=state.endsAt-Date.now();$("timer").textContent=formatTime(Math.max(0,Math.floor(left/1000)));if(left<=0){const winner=winnerAtTime();finish(winner,"15-minute timer ended")}}
+function winnerAtTime(){return [...state.players].sort((a,b)=>{const s=completeSets(b).length-completeSets(a).length;if(s)return s;const m=moneyTotal(b)-moneyTotal(a);if(m)return m;return propertyValue(b)-propertyValue(a)})[0]}
+function showResult(){if(!state?.winner)return;const w=state.players.find(p=>p.id===state.winner)||winnerAtTime();$("winnerName").textContent=`${w.name} wins!`;$("resultReason").textContent=state.reason||"Game over";$("result").classList.remove("hidden")}
+function formatTime(s){const m=Math.floor(s/60),x=s%60;return `${String(m).padStart(2,"0")}:${String(x).padStart(2,"0")}`}
+function notice(s){$("turnText").textContent=s;setTimeout(()=>{if(state)renderGame()},1800)}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+$("create").onclick=createRoom;$("joinBtn").onclick=joinRoom;$("play").onclick=playSelected;$("bank").onclick=bankSelected;$("end").onclick=endTurn;$("pass").onclick=endTurn;$("leave").onclick=()=>location.href=location.pathname;$("modal").onclick=e=>{if(e.target.id==="modal")closeModal()};$("rematch").onclick=async()=>{ $("result").classList.add("hidden"); if(state){const st=initState(state.players);state=st;await api(`${TABLE}?id=eq.${room}`,{method:"PATCH",body:JSON.stringify({status:"playing",game_state:st})});renderGame()}};
+$("name").addEventListener("keydown",e=>{if(e.key==="Enter")createRoom()});$("roomCode").addEventListener("keydown",e=>{if(e.key==="Enter")joinRoom()});
+setInterval(checkTime,500);
+const q=new URLSearchParams(location.search);if(q.get("room")){room=q.get("room").toUpperCase();$("roomCode").value=room}
+</script>
+</body>
+</html>
